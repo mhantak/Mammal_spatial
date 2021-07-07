@@ -37,96 +37,7 @@ str(Mammal.traits)
 ##########################################################################################
 
 ##Spatial data
-Mammal.BM <- read.csv("Mammal_spatial_BM_extended.csv", header = TRUE, stringsAsFactors = FALSE)
-str(Mammal.BM)
-plyr::count(Mammal.BM$binomial2)
-
-## decade cut off 
-rm.dec <-(Mammal.BM$decade > 1939)
-Mammal.BM <- Mammal.BM[rm.dec,]
-
-#Remove records that are missing data
-Mammal.BM <- Mammal.BM %>% drop_na(NA_L1NAME) #ecoregion
-Mammal.BM <- Mammal.BM %>% drop_na(MAT_1yr) #Mean Annual Temp.
-Mammal.BM <- Mammal.BM %>% drop_na(pop_density_10km2) #human pop. density
-Mammal.BM <- Mammal.BM %>% drop_na(MAP_1yr) #Mean annual precip. 
-Mammal.BM <- Mammal.BM %>% drop_na(ave_2_yr_ppt) 
-Mammal.BM <- Mammal.BM %>% drop_na(ave_2_yr_tmean) 
-Mammal.BM <- Mammal.BM %>% drop_na(ave_5_yr_ppt) 
-Mammal.BM <- Mammal.BM %>% drop_na(ave_5_yr_tmean) 
-
-#Remove TROPICAL WET FORESTS & WATER - not enough data
-Mam.BM.spatial <- Mammal.BM %>% filter(NA_L1NAME != 'TROPICAL WET FORESTS') %>% droplevels()
-Mam.BM.spatial <- Mam.BM.spatial %>% filter(NA_L1NAME != 'WATER') %>% droplevels()
-
-table(Mam.BM.spatial$NA_L1NAME)
-plyr::count(Mam.BM.spatial$binomial2)
-
-hist(Mam.BM.spatial$MAP_1yr)
-hist(Mam.BM.spatial$MAT_1yr)
-hist(Mam.BM.spatial$pop_density_10km2)
-hist(Mam.BM.spatial$ave_2_yr_ppt)
-hist(Mam.BM.spatial$ave_2_yr_tmean)
-hist(Mam.BM.spatial$ave_5_yr_ppt)
-hist(Mam.BM.spatial$ave_5_yr_tmean)
-
-#log MAT and log10 pop density 
-MAP.log <- log(Mam.BM.spatial$MAP_1yr) 
-Mam.BM.spatial <- cbind(Mam.BM.spatial, MAP.log)
-MAP.log_2yr <- log(Mam.BM.spatial$ave_2_yr_ppt) 
-Mam.BM.spatial <- cbind(Mam.BM.spatial, MAP.log_2yr)
-MAP.log_5yr <- log(Mam.BM.spatial$ave_5_yr_ppt) 
-Mam.BM.spatial <- cbind(Mam.BM.spatial, MAP.log_5yr)
-
-######log 10 transform human population density then scale
-pop.den.log <- log10(Mam.BM.spatial$pop_density_10km2 + 1) # +1 because there are zero values 
-Mam.BM.spatial <- cbind(Mam.BM.spatial, pop.den.log)
-
-hist(Mam.BM.spatial$MAP.log)
-hist(Mam.BM.spatial$MAP.log_2yr)
-hist(Mam.BM.spatial$MAP.log_5yr)
-hist(Mam.BM.spatial$pop.den.log)
-
-###log10 trasform HBL length and body mass
-BM.log10 <- log10(Mam.BM.spatial$X1st_body_mass) 
-Mam.BM.spatial <- cbind(Mam.BM.spatial, BM.log10)
-##
-HBL.log10 <- log10(Mam.BM.spatial$HB.length) 
-Mam.BM.spatial <- cbind(Mam.BM.spatial, HBL.log10)
-
-####
-Mam.BM.spatial$binomial2 <- as.factor(Mam.BM.spatial$binomial2)
-Mam.BM.spatial$season <- as.factor(Mam.BM.spatial$season)
-Mam.BM.spatial$source <- as.factor(Mam.BM.spatial$source)
-Mam.BM.spatial$NA_L1NAME <- as.factor(Mam.BM.spatial$NA_L1NAME)
-Mam.BM.spatial$sex <- as.factor(Mam.BM.spatial$sex)
-
-#scaling and centering
-Mam.BM.spatial <- transform(Mam.BM.spatial, pop.den.log=scale(pop.den.log), MAP.log=scale(MAP.log), MAT_1yr=scale(MAT_1yr), MAP_1yr=scale(MAP_1yr), pop_density_10km2=scale(pop_density_10km2), 
-                            ave_2_yr_tmean=scale(ave_2_yr_tmean), MAP.log_2yr=scale(MAP.log_2yr), ave_5_yr_tmean=scale(ave_5_yr_tmean), MAP.log_5yr=scale(MAP.log_5yr))
-str(Mam.BM.spatial)
-
-Mam.BM.spatial$decade2 <- Mam.BM.spatial$decade
-str(Mam.BM.spatial)
-table(Mam.BM.spatial$decade2)
-
-#change date to numbers for model interpretation
-Mam.BM.spatial$decade2[Mam.BM.spatial$decade2 == "1940"] <- "0"
-Mam.BM.spatial$decade2[Mam.BM.spatial$decade2 == "1950"] <- "1"
-Mam.BM.spatial$decade2[Mam.BM.spatial$decade2 == "1960"] <- "2"
-Mam.BM.spatial$decade2[Mam.BM.spatial$decade2 == "1970"] <- "3"
-Mam.BM.spatial$decade2[Mam.BM.spatial$decade2 == "1980"] <- "4"
-Mam.BM.spatial$decade2[Mam.BM.spatial$decade2 == "1990"] <- "5"
-Mam.BM.spatial$decade2[Mam.BM.spatial$decade2 == "2000"] <- "6"
-Mam.BM.spatial$decade2[Mam.BM.spatial$decade2 == "2010"] <- "7"
-
-str(Mam.BM.spatial)
-Mam.BM.spatial$decade2 <- as.numeric(Mam.BM.spatial$decade2)
-Mam.BM.spatial$decade <- as.numeric(Mam.BM.spatial$decade)
-plyr::count(Mam.BM.spatial$binomial2)
-
-############################################################################################################################################
-#spatial HB Length 
+#HB Length 
 
 Mammal.HBL <- read.csv("Mammal_spatial_HBL_extended.csv", header = TRUE, stringsAsFactors = FALSE)
 str(Mammal.HBL)
@@ -218,9 +129,9 @@ plyr::count(Mam.HBL.sp.spatial$binomial2)
 ##TRAITS WITH SPATIAL BM AND HB LENGTH DATASETS 
 
 #Combine traits with spatial body mass data 
-BM.traits.climate.sp <- merge(Mammal.traits, Mam.BM.spatial)
-str(BM.traits.climate.sp)
-plyr::count(BM.traits.climate.sp$binomial2)
+#BM.traits.climate.sp <- merge(Mammal.traits, Mam.BM.spatial)
+#str(BM.traits.climate.sp)
+#plyr::count(BM.traits.climate.sp$binomial2)
 
 #Combine traits with spatial HB length data 
 HBL.traits.climate.sp <- merge(Mammal.traits, Mam.HBL.sp.spatial)
@@ -241,23 +152,6 @@ library(phytools)
 mam.tree <- read.tree("mammal2.tre")
 str(mam.tree)
 
-##body mass
-BM.spatial.species <- read.csv("Mam.BM.spatial.species.csv", header = TRUE, stringsAsFactors = FALSE, row.names = 1)
-
-#checking match
-matching.files <- name.check(mam.tree, BM.spatial.species) 
-matching.files$data_not_tree
-
-#re-upload
-BM.spatial.species <- read.csv("Mam.BM.spatial.species.csv")
-plyr::count(BM.spatial.species$binomial2)
-plyr::count(BM.traits.climate.sp$binomial2)
-
-pruned.tree.BM.spatial <-drop.tip(mam.tree, mam.tree$tip.label[-na.omit(match(BM.spatial.species[,1],mam.tree$tip.label))])
-plyr::count(pruned.tree.BM.spatial$tip.label)
-str(pruned.tree.BM.spatial)
-plot(pruned.tree.BM.spatial)
-plotTree(pruned.tree.BM.spatial,ftype="i",lwd=1,fsize=0.3,type="fan",part=1)
 
 ##############
 #HB length 
